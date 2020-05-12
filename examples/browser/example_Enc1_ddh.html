@@ -1,0 +1,147 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>JavaScript Test Enc 1</title>
+</head>
+<body>
+<h1>JavaScript Test Enc 1 Example</h1>
+<script src="src/rand.js"></script>
+<script src="src/rom_curve.js"></script>
+<script src="src/rom_field.js"></script>
+<script src="src/uint64.js"></script>
+<script src="src/aes.js"></script>
+<script src="src/big.js"></script>
+<script src="src/gcm.js"></script>
+<script src="src/hash256.js"></script>
+<script src="src/hash384.js"></script>
+<script src="src/hash512.js"></script>
+<script src="src/sha3.js"></script>
+<script src="src/nhs.js"></script>
+<script src="src/fp.js"></script>
+<script src="src/fp2.js"></script>
+<script src="src/fp4.js"></script>
+<script src="src/fp12.js"></script>
+<script src="src/ff.js"></script>
+<script src="src/rsa.js"></script>
+<script src="src/ecp.js"></script>
+<script src="src/ecp2.js"></script>
+<script src="src/ecdh.js"></script>
+<script src="src/pair.js"></script>
+<script src="src/bls.js"></script>
+<script src="src/mpin.js"></script>
+<script src="src/ctx.js"></script>
+
+<script src="src/fp8.js"></script>
+<script src="src/fp16.js"></script>
+<script src="src/fp24.js"></script>
+<script src="src/fp48.js"></script>
+<script src="src/ecp4.js"></script>
+<script src="src/ecp8.js"></script>
+<script src="src/pair192.js"></script>
+<script src="src/pair256.js"></script>
+<script src="src/mpin192.js"></script>
+<script src="src/mpin256.js"></script>
+<script src="src/bls192.js"></script>
+<script src="src/bls256.js"></script>
+
+
+<p><a id="myLink4" href="#" onclick="location.reload(false);bn254();">BN254 254-bit k=12 Pairing-Friendly BN Curve Boneh-Lynn-Shacham</a></p>
+
+<script>
+
+
+/* Test DEMOS2 signature */
+
+// BN254 context
+function bn254() {
+	var ctx = new CTX('BN254');
+	mywindow=window.open();
+
+	mywindow.document.write("<br> BN254 Pairing-Friendly Curve "+  "<br>");
+
+	var i;
+	var result;
+
+	var BGS=ctx.BLS.BGS;
+	var BFS=ctx.BLS.BFS;
+
+	var G1S=BFS+1; // Group 1 Size 
+	var G2S=4*BFS; // Group 2 Size 
+
+	var B=[];
+	var S=[],F1=[];
+	var R=[],C1=[],C2=[];
+//REAL WORLD	
+	var H2=[],U1=[],U2=[];
+	var G1=[],C2G1=[];
+	var bC1=[],bC2=[],bP1=[],bP2=[];
+	
+	var RAW=[];
+	var rng=new ctx.RAND();
+	rng.clean();
+	for (i=0;i<100;i++) RAW[i]=i;
+	rng.seed(100,RAW);
+
+	mywindow.document.write ("Testing Enc (0 or 1) code <br>");
+	var b = new ctx.BIG(1);
+	b.toBytes(B);
+
+	var g1 = ctx.ECP.generator();
+	g1.toBytes(G1);
+
+	ctx.BLS.PKGen(rng, S, F1);
+	mywindow.document.write ("Gen PK Pair(s, f1). f1= 0x"+ ctx.BLS.bytestostring(F1) +"<br>");
+
+	var t;
+	var start = new Date().getTime();
+	for (t = 0; t < 20; t++) {
+
+		ctx.BLS.CRGen(rng, F1, B, R, C1, C2);
+	//	mywindow.document.write("Gen ciphertext c={C1,C2}. c1= 0x"+ctx.BLS.bytestostring(C1) + "<br>");
+		var c2 = ctx.ECP.fromBytes(C2);
+		c2.sub(g1);
+		c2.toBytes(C2G1);
+
+//	mywindow.document.write ("---------- Testing Real CRS ---------- <br>");
+		ctx.BLS.CRSGen(rng,H2,U1,U2);
+	//	mywindow.document.write("crs={h2,u={u1,u2}}. h1= 0x"+ctx.BLS.bytestostring(mH1) + "<br>");
+
+		ctx.BLS.Prov(H2,U1,U2,G1,F1,R,rng,bC1,bC2,bP1,bP2);
+	//	mywindow.document.write("Prove output pi={c={bc1,bc2},bp1,bp2}. c1= 0x"+ctx.BLS.bytestostring(C1) + "<br>");
+		
+		var res = ctx.BLS.Vrfy(H2,U1,U2,G1,F1,C1,C2G1,bC1,bC2,bP1,bP2);
+	/**
+		if (res == 0)
+			mywindow.document.write("Real CRS verify is OK" + "<br>");
+		else
+			mywindow.document.write("Real CRS verify is *NOT* OK"  + "<br>");
+	*/
+	}
+	var end = new Date().getTime();
+	mywindow.document.write("Gen C1, C2 + proof for encrypted 20 time is (average for 1 runs): " +(end - start)/20+ " ms<br>");
+
+//IDEAL WORLD 
+	var SH2=[],SU1=[],SU2=[],A2=[];
+	var SC1=[],SC2=[],SP1=[],SP2=[];
+
+	mywindow.document.write ("---------- Testing Simulated CRS ---------- <br>");
+	ctx.BLS.SimCRSGen(rng,SH2,SU1,SU2,A2);
+	mywindow.document.write("crs={sh2,u={su1,su2}}. sh2= 0x"+ctx.BLS.bytestostring(SH2) + "<br>");
+
+	ctx.BLS.SimProv(SH2,G1,F1,C1,C2G1,rng,SC1,SC2,SP1,SP2,A2);
+	mywindow.document.write("Prove output pi={c={c1,c2},p1,p2}. sc1= 0x"+ctx.BLS.bytestostring(SC1) + "<br>");
+	
+	var resI = ctx.BLS.Vrfy(SH2,SU1,SU2,G1,F1,C1,C2G1,SC1,SC2,SP1,SP2);
+	
+	if (resI == 0)
+		mywindow.document.write("Simulated CRS verify is OK" + "<br>");
+	else
+		mywindow.document.write("Simulated CRS verify is *NOT* OK"  + "<br>");
+
+	//TEST: mywindow.document.write("000 <br>");
+}
+
+</script>
+</body>
+</html>

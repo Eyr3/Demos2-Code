@@ -1,0 +1,54 @@
+{
+  "name": "milagro-crypto-js",
+  "version": "0.1.0",
+  "description": "Apache Milagro Crypto JavaScript Library",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha-parallel-tests",
+    "coverage": "nyc mocha-parallel-tests",
+    "report": "nyc report --reporter=text-lcov | coveralls",
+    "lint": "eslint ."
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/apache/incubator-milagro-crypto-js.git"
+  },
+  "keywords": [
+    "pairing",
+    "elliptic",
+    "curve",
+    "cryptography"
+  ],
+  "author": "Michael Scott, Alessandro Budroni, Kealan McCusker",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/apache/incubator-milagro-crypto-js/issues"
+  },
+  "homepage": "https://github.com/apache/incubator-milagro-crypto-js#readme",
+  "devDependencies": {
+    "chai": "latest",
+    "coveralls": "latest",
+    "eslint": "latest",
+    "istanbul": "latest",
+    "mocha": "latest",
+    "mocha-text-cov": "latest",
+    "nyc": "latest",
+    "mocha-parallel-tests": "latest"
+  },
+  "nyc": {
+    "include": [
+      "src/**/*.js"
+    ],
+    "reporter": [
+      "lcov",
+      "text-summary",
+      "html"
+    ],
+    "sourceMap": true,
+    "instrument": true
+  }
+}

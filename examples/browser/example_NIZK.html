@@ -1,0 +1,140 @@
+
+<!DOCTYPE HTML>
+<html>
+<head>
+<title>JavaScript Test NIZK</title>
+</head>
+<body>
+<h1>JavaScript Test NIZK Example</h1>
+<script src="src/rand.js"></script>
+<script src="src/rom_curve.js"></script>
+<script src="src/rom_field.js"></script>
+<script src="src/uint64.js"></script>
+<script src="src/aes.js"></script>
+<script src="src/big.js"></script>
+<script src="src/gcm.js"></script>
+<script src="src/hash256.js"></script>
+<script src="src/hash384.js"></script>
+<script src="src/hash512.js"></script>
+<script src="src/sha3.js"></script>
+<script src="src/nhs.js"></script>
+<script src="src/fp.js"></script>
+<script src="src/fp2.js"></script>
+<script src="src/fp4.js"></script>
+<script src="src/fp12.js"></script>
+<script src="src/ff.js"></script>
+<script src="src/rsa.js"></script>
+<script src="src/ecp.js"></script>
+<script src="src/ecp2.js"></script>
+<script src="src/ecdh.js"></script>
+<script src="src/pair.js"></script>
+<script src="src/bls.js"></script>
+<script src="src/mpin.js"></script>
+<script src="src/ctx.js"></script>
+
+<script src="src/fp8.js"></script>
+<script src="src/fp16.js"></script>
+<script src="src/fp24.js"></script>
+<script src="src/fp48.js"></script>
+<script src="src/ecp4.js"></script>
+<script src="src/ecp8.js"></script>
+<script src="src/pair192.js"></script>
+<script src="src/pair256.js"></script>
+<script src="src/mpin192.js"></script>
+<script src="src/mpin256.js"></script>
+<script src="src/bls192.js"></script>
+<script src="src/bls256.js"></script>
+
+
+<p><a id="myLink4" href="#" onclick="location.reload(false);bn254();">BN254 254-bit k=12 Pairing-Friendly BN Curve Boneh-Lynn-Shacham</a></p>
+
+<script>
+
+
+/* Test DEMOS2 signature */
+
+// BN254 context
+function bn254() {
+	var ctx = new CTX('BN254');
+	mywindow=window.open();
+
+	mywindow.document.write("<br> BN254 Pairing-Friendly Curve "+  "<br>");
+
+	var i;
+	var result;
+
+	var BGS=ctx.BLS.BGS;
+	var BFS=ctx.BLS.BFS;
+
+	var G1S=BFS+1; // Group 1 Size 
+	var G2S=4*BFS; // Group 2 Size 
+
+	var A=[],B=[],C=[],D=[];
+//	var A1=[],B1=[],C1=[],D1=[];
+//REAL WORLD
+	var S=[];
+	var H2=[],U1=[],U2=[];
+	var C1=[],C2=[];
+	var P1=[],P2=[];
+//IDEAL WORLD
+	var A2=[]
+	var SH2=[],SU1=[],SU2=[];
+	var SC1=[],SC2=[];
+	var SP1=[],SP2=[];
+
+	var RAW=[];
+	var rng=new ctx.RAND();
+	rng.clean();
+	for (i=0;i<100;i++) RAW[i]=i;
+	rng.seed(100,RAW);
+
+	mywindow.document.write ("Testing DEMOS2 code <br>");
+//	var mess="This is a test message";
+
+	var t;
+	var start = new Date().getTime();
+	for (t = 0; t < 100; t++) {
+
+		ctx.BLS.DDHTGen(rng,A,B,C,D,S);
+	//	mywindow.document.write ("Gen DDH Tuple (A, B, C, D). A= 0x"+ ctx.BLS.bytestostring(A) +"<br>");
+
+	//	ctx.BLS.DDHTGentest(rng,A1,B1,C1,D1);
+
+	//	mywindow.document.write ("---------- Testing real CRS ---------- <br>");
+		ctx.BLS.CRSGen(rng,H2,U1,U2);
+	//	mywindow.document.write("crs={h2,u={u1,u2}}. h2= 0x"+ctx.BLS.bytestostring(H2) + "<br>");
+
+		ctx.BLS.Prov(H2,U1,U2,A,B,S,rng,C1,C2,P1,P2);
+	//	mywindow.document.write("Prove output pi={c={c1,c2},p1,p2}. c1= 0x"+ctx.BLS.bytestostring(C1) + "<br>");
+		
+		var res0=ctx.BLS.Vrfy(H2,U1,U2,A,B,C,D,C1,C2,P1,P2);
+	}
+	/** 
+	if (res0==0)
+		mywindow.document.write("Real CRS verify is OK" + "<br>");
+	else
+		mywindow.document.write("Real CRS verify is *NOT* OK"  + "<br>");
+	*/
+
+	var end = new Date().getTime();
+	mywindow.document.write("DDH tuple proof time is (average for 100 runs): " +(end - start)/100+ " ms<br>");
+	
+	mywindow.document.write ("---------- Testing Simulated CRS ---------- <br>");
+	ctx.BLS.SimCRSGen(rng,SH2,SU1,SU2,A2);
+	mywindow.document.write("crs*={SH2, u={SU1,SU2}}. sh2= 0x"+ctx.BLS.bytestostring(SH2) + "<br>");
+	
+	ctx.BLS.SimProv(SH2,A,B,C,D,rng,SC1,SC2,SP1,SP2,A2);
+	mywindow.document.write("Prove output pi*={c*={SC1,SC2}, SP1,SP2}. sc1= 0x"+ctx.BLS.bytestostring(SC1) + "<br>");
+
+	var res1=ctx.BLS.Vrfy(SH2,SU1,SU2,A,B,C,D,SC1,SC2,SP1,SP2);
+
+	if (res1==0)
+		mywindow.document.write("Simulated CRS verify is OK" + "<br>");
+	else
+		mywindow.document.write("Simulated CRS verify is *NOT* OK"  + "<br>");
+
+}
+
+</script>
+</body>
+</html>
