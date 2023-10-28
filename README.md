@@ -16,6 +16,6 @@ This repository is the official implementation of [An Eﬀicient E2E Crowd Verif
 }
 ```
 
-## Acknowledgements
+## Acknowledgement
 
 [MCJS - Milagro Crypto JavaScript](https://github.com/apache/incubator-milagro-crypto-js)
